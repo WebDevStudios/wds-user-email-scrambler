@@ -84,7 +84,7 @@ final class UserEmailScrambler {
 	 * @return void
 	 */
 	private function maybe_confirm_lack_of_ignored_domains() {
-		if ( ! empty( $this->assoc_args['ignored_domains'] ) ) {
+		if ( ! empty( $this->assoc_args['ignored-domains'] ) ) {
 			return;
 		}
 
@@ -139,11 +139,11 @@ final class UserEmailScrambler {
 	 * @return array
 	 */
 	private function get_ignored_domains() {
-		if ( ! isset( $this->assoc_args['ignored_domains'] ) ) {
+		if ( ! isset( $this->assoc_args['ignored-domains'] ) ) {
 			return [];
 		}
 
-		return array_map( 'trim', explode( ',', $this->assoc_args['ignored_domains'] ) );
+		return array_map( 'trim', explode( ',', $this->assoc_args['ignored-domains'] ) );
 	}
 
 	/**
