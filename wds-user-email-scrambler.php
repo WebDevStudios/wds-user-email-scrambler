@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WDS User Email Scrambler
- * Description: Adds a WP-CLI command that scramblers user email addresses. Useful for preventing accidentally emailing real customers/users when testing mass or transactional email.
+ * Description: Adds a WP-CLI command that scrambles user email addresses. Useful for preventing accidentally emailing real customers/users when testing mass or transactional email.
  * Plugin URI: https://github.org/webdevstudios/wds-user-email-scrambler
  * Version: 0.0.1
  * Author: WebDevStudios
@@ -232,4 +232,4 @@ final class UserEmailScrambler {
 	}
 }
 
-WP_CLI::add_command( 'scramble_user_emails', '\WebDevStudios\CLI\UserEmailScrambler' );
+WP_CLI::add_command( 'scramble-user-emails', '\WebDevStudios\CLI\UserEmailScrambler' );
