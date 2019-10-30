@@ -16,3 +16,18 @@ Adds a WP-CLI command that scrambles user email addresses. Useful for preventing
 
 - If you run `wp scramble-user-emails --ignored-domains="webdevstudios.com, wdslab.com"` for example, then any user email that ends with `@webdevstudios.com` or `@wdslab.com` will be ignored.
 - This is useful for preserving, for example, admin email addresses or author email addresses.
+
+## Example
+
+**Before:**
+![before-screenshot](https://i.imgur.com/e7cuvKP.png)
+
+**Command**
+```
+wp scramble-user-emails --ignored-domains="webdevstudios.com, okeeffemuseum.org, anagr.am"
+```
+
+**After:**
+![after-screenshot](https://i.imgur.com/nFR98ku.png)
+
+
