@@ -68,6 +68,15 @@ final class UserEmailScrambler {
 	private $table = '';
 
 	/**
+	 * Target field name.
+	 *
+	 * @since 0.0.2
+	 *
+	 * @var string
+	 */
+	private $field = '';
+
+	/**
 	 * Callback for invocation of the command from cli.
 	 *
 	 * @author George Gecewicz <george.gecewicz@webdevstudios.com>
@@ -108,7 +117,7 @@ final class UserEmailScrambler {
 	 */
 	private function initialize_batch_process() {
 		$this->table = $this->get_target_table();
-		$field       = $this->get_target_field();
+		$this->field = $this->get_target_field();
 		$key         = $this->get_target_table_key();
 		$user_ids        = $this->get_user_ids_to_scramble();
 		$user_id_batches = array_chunk( $user_ids, 30, true );
@@ -269,7 +278,7 @@ final class UserEmailScrambler {
 	 *
 	 * @return string
 	 */
-	private function get_ignored_domains_where_clause() {
+	private function get_ignored_domains_where_clause() : string {
 		$ignored_domains = $this->get_ignored_domains();
 
 		if ( empty( $ignored_domains ) ) {
@@ -280,9 +289,9 @@ final class UserEmailScrambler {
 
 		foreach ( $ignored_domains as $ignored_domain ) {
 			if ( 0 === count( $clauses ) ) {
-				$clauses[] = "WHERE user_email NOT LIKE '%{$ignored_domain}%'";
+				$clauses[] = "{$this->field} NOT LIKE '%{$ignored_domain}%'";
 			} else {
-				$clauses[] = "AND user_email NOT LIKE '%{$ignored_domain}%'";
+				$clauses[] = "AND {$this->field} NOT LIKE '%{$ignored_domain}%'";
 			}
 		}
 
