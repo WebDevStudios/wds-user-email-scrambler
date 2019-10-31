@@ -244,13 +244,12 @@ final class UserEmailScrambler {
 	 * @since 0.0.1
 	 *
 	 * @param  string $key Primary key for target table.
-	 * @return int
+	 * @return array       Array of record objects containing primary key IDs.
 	 */
-	private function get_record_ids_to_scramble( string $key ) {
+	private function get_record_ids_to_scramble( string $key ) : array {
 		global $wpdb;
 
 		$where_clause = $this->get_full_where_clause();
-
 
 		return $wpdb->get_results( "SELECT {$key} FROM {$this->table} {$where_clause}" ); // phpcs:disable WordPress.DB.PreparedSQL -- Okay use of unprepared variables SQL.
 	}
