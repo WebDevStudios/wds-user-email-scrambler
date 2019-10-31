@@ -124,7 +124,7 @@ final class UserEmailScrambler {
 	private function get_user_ids_to_scramble() {
 		global $wpdb;
 
-		$users_table  = $this->get_users_table_name();
+		$users_table  = $this->get_table_name();
 		$where_clause = $this->get_ignored_domains_where_clause();
 
 		return $wpdb->get_results( "SELECT ID FROM {$users_table} {$where_clause}" ); // phpcs:disable WordPress.DB.PreparedSQL -- Okay use of unprepared variables SQL.
@@ -186,7 +186,7 @@ final class UserEmailScrambler {
 	private function scramble_batch_of_user_emails( $users, $total ) {
 		global $wpdb;
 
-		$users_table = $this->get_users_table_name();
+		$users_table = $this->get_table_name();
 
 		foreach ( $users as $user ) {
 			$wpdb->query(
@@ -219,16 +219,17 @@ final class UserEmailScrambler {
 	}
 
 	/**
-	 * Simple helper for getting wpdb-prefixed users table name.
+	 * Simple helper for getting wpdb-prefixed table name.
 	 *
 	 * @author George Gecewicz <george.gecewicz@webdevstudios.com>
 	 * @since 0.0.1
 	 *
-	 * @return string
+	 * @param  string $table Table name, defaults to 'users'.
+	 * @return string        Wpdb-prefixed table name.
 	 */
-	private function get_users_table_name() {
+	private function get_table_name( $table = 'users' ) {
 		global $wpdb;
-		return $wpdb->prefix . 'users';
+		return $wpdb->prefix . $table;
 	}
 }
 
