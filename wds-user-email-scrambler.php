@@ -59,6 +59,15 @@ final class UserEmailScrambler {
 	private $num_scrambled = 0;
 
 	/**
+	 * Wpdb-prefixed target table name.
+	 *
+	 * @since 0.0.2
+	 *
+	 * @var string
+	 */
+	private $table = '';
+
+	/**
 	 * Callback for invocation of the command from cli.
 	 *
 	 * @author George Gecewicz <george.gecewicz@webdevstudios.com>
@@ -98,8 +107,8 @@ final class UserEmailScrambler {
 	 * @since 0.0.1
 	 */
 	private function initialize_batch_process() {
-		$table = $this->get_target_table();
-		$field = $this->get_target_field( $table );
+		$this->table = $this->get_target_table();
+		$field       = $this->get_target_field();
 		$user_ids        = $this->get_user_ids_to_scramble();
 		$user_id_batches = array_chunk( $user_ids, 30, true );
 
@@ -137,15 +146,14 @@ final class UserEmailScrambler {
 	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
 	 * @since  0.0.2
 	 *
-	 * @param  string $table Table name.
 	 * @return string        Field name, if exists.
 	 */
-	private function get_target_field( $table ) {
+	private function get_target_field() {
 		if ( ! isset( $this->assoc_args['field'] ) ) {
 			return 'user_email';
 		}
 
-		return $this->check_field_exists( trim( $this->assoc_args['field'] ), $table );
+		return $this->check_field_exists( trim( $this->assoc_args['field'] ) );
 	}
 
 	/**
@@ -183,13 +191,12 @@ final class UserEmailScrambler {
 	 * @since  0.0.2
 	 *
 	 * @param  string $field User-supplied field name.
-	 * @param  string $table Wpdb-prefixed table name.
 	 * @return string        Confirmed field name, if exists.
 	 */
-	private function check_field_exists( $field, $table ) {
+	private function check_field_exists( $field ) {
 		global $wpdb;
 
-		$response = $wpdb->get_col( "DESC {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL -- Okay use of unprepared variable for table name in SQL.
+		$response = $wpdb->get_col( "DESC {$this->table}" ); // phpcs:ignore WordPress.DB.PreparedSQL -- Okay use of unprepared variable for table name in SQL.
 
 		// Output error if field does not exist.
 		if ( false === array_search( $field, $response ) ) {
