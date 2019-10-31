@@ -116,19 +116,19 @@ final class UserEmailScrambler {
 	 * @since 0.0.1
 	 */
 	private function initialize_batch_process() {
-		$this->table = $this->get_target_table();
-		$this->field = $this->get_target_field();
-		$key         = $this->get_target_table_key();
-		$record_ids  = $this->get_record_ids_to_scramble( $key );
-		$user_id_batches = array_chunk( $user_ids, 30, true );
+		$this->table       = $this->get_target_table();
+		$this->field       = $this->get_target_field();
+		$key               = $this->get_target_table_key();
+		$record_ids        = $this->get_record_ids_to_scramble( $key );
+		$record_id_batches = array_chunk( $record_ids, 30, true );
 
 		/* Translators: Placeholders are for color and line-break formatting within WP_CLI.  */
 		WP_CLI::log( WP_CLI::colorize( esc_html__( '%BScrambling emails:%n', 'wds-user-email-scrambler' ) ) );
 
 		$this->num_scrambled = 0;
 
-		foreach ( $user_id_batches as $batch ) {
-			$this->scramble_batch_of_user_emails( $batch, count( $user_ids ) );
+		foreach ( $record_id_batches as $batch ) {
+			$this->scramble_batch_of_user_emails( $batch, count( $record_ids ), $key );
 		}
 
 		WP_CLI::log( WP_CLI::colorize( esc_html__( '%BDone!%n', 'wds-user-email-scrambler' ) ) );
@@ -144,7 +144,7 @@ final class UserEmailScrambler {
 	 */
 	private function get_target_table() : string {
 		if ( ! isset( $this->assoc_args['table'] ) ) {
-			return 'users';
+			return $this->get_table_name();
 		}
 
 		return $this->check_table_exists( trim( $this->assoc_args['table'] ) );
@@ -345,27 +345,26 @@ final class UserEmailScrambler {
 	}
 
 	/**
-	 * Process a batch of users and scramble their email addresses.
+	 * Process a batch of records and scramble their email addresses.
 	 *
 	 * @author George Gecewicz <george.gecewicz@webdevstudios.com>
 	 * @since 0.0.1
 	 *
-	 * @param array $users A batch of users passed by array_chunking the entire list of users eligible for scrambling.
-	 * @param int   $total Total number of users whose emails are being scrambled.
+	 * @param array  $records A batch of records passed by array_chunking the entire list of records eligible for scrambling.
+	 * @param int    $total   Total number of records whose emails are being scrambled.
+	 * @param string $key     Primary key for target table.
 	 */
-	private function scramble_batch_of_user_emails( $users, $total ) {
+	private function scramble_batch_of_user_emails( array $records, int $total, string $key ) {
 		global $wpdb;
 
-		$users_table = $this->get_table_name();
-
-		foreach ( $users as $user ) {
+		foreach ( $records as $record ) {
 			$wpdb->query(
 				$wpdb->prepare(
-					"UPDATE {$users_table}
-					SET user_email = %s
-					WHERE ID = %d",
+					"UPDATE {$this->table}
+					SET {$this->field} = %s
+					WHERE {$key} = %d",
 					$this->get_scrambled_email_address(),
-					$user->ID
+					$record->$key
 				)
 			);
 
