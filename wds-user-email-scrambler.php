@@ -3,7 +3,7 @@
  * Plugin Name: WDS User Email Scrambler
  * Description: Adds a WP-CLI command that scrambles user email addresses. Useful for preventing accidentally emailing real customers/users when testing mass or transactional email.
  * Plugin URI: https://github.org/webdevstudios/wds-user-email-scrambler
- * Version: 0.0.1
+ * Version: 0.0.2
  * Author: WebDevStudios
  * Author URI: https://www.webdevstudios.com/
  * License: GPL-3.0+
@@ -84,7 +84,7 @@ final class UserEmailScrambler {
 	 * @return void
 	 */
 	private function maybe_confirm_lack_of_ignored_domains() {
-		if ( ! empty( $this->assoc_args['ignored-domains'] ) ) {
+		if ( ! empty( $this->get_ignored_domains() ) ) {
 			return;
 		}
 
