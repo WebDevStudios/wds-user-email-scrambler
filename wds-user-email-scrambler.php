@@ -109,6 +109,7 @@ final class UserEmailScrambler {
 	private function initialize_batch_process() {
 		$this->table = $this->get_target_table();
 		$field       = $this->get_target_field();
+		$key         = $this->get_target_table_key();
 		$user_ids        = $this->get_user_ids_to_scramble();
 		$user_id_batches = array_chunk( $user_ids, 30, true );
 
@@ -138,6 +139,27 @@ final class UserEmailScrambler {
 		}
 
 		return $this->check_table_exists( trim( $this->assoc_args['table'] ) );
+	}
+
+	/**
+	 * Get primary key of target table.
+	 *
+	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
+	 * @since  0.0.2
+	 *
+	 * @return string Primary key name.
+	 */
+	private function get_target_table_key() {
+		global $wpdb;
+
+		$response = $wpdb->get_row( "SHOW KEYS FROM {$this->table} WHERE Key_name = 'PRIMARY'" ); // phpcs:ignore WordPress.DB.PreparedSQL -- Okay use of unprepared variable for table name in SQL.
+
+		// Output error if primary key not available.
+		if ( null === $response || ! isset( $response->Column_name ) ) { // phpcs:ignore WordPress.NamingConventions -- Okay property name.
+			WP_CLI::error( esc_html__( 'Something went wrong. Supplied table does not have a primary key. Please check table schema and try again.', 'wds-user-email-scrambler' ) );
+		}
+
+		return $response->Column_name; // phpcs:ignore WordPress.NamingConventions -- Okay property name.
 	}
 
 	/**
