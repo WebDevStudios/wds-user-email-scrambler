@@ -119,7 +119,7 @@ final class UserEmailScrambler {
 		$this->table = $this->get_target_table();
 		$this->field = $this->get_target_field();
 		$key         = $this->get_target_table_key();
-		$user_ids        = $this->get_user_ids_to_scramble();
+		$record_ids  = $this->get_record_ids_to_scramble( $key );
 		$user_id_batches = array_chunk( $user_ids, 30, true );
 
 		/* Translators: Placeholders are for color and line-break formatting within WP_CLI.  */
@@ -238,20 +238,21 @@ final class UserEmailScrambler {
 	}
 
 	/**
-	 * Get user IDs to scramble
+	 * Get record IDs to scramble.
 	 *
 	 * @author George Gecewicz <george.gecewicz@webdevstudios.com>
 	 * @since 0.0.1
 	 *
+	 * @param  string $key Primary key for target table.
 	 * @return int
 	 */
-	private function get_user_ids_to_scramble() {
+	private function get_record_ids_to_scramble( string $key ) {
 		global $wpdb;
 
-		$users_table  = $this->get_table_name();
-		$where_clause = $this->get_ignored_domains_where_clause();
+		$where_clause = $this->get_full_where_clause();
 
-		return $wpdb->get_results( "SELECT ID FROM {$users_table} {$where_clause}" ); // phpcs:disable WordPress.DB.PreparedSQL -- Okay use of unprepared variables SQL.
+
+		return $wpdb->get_results( "SELECT {$key} FROM {$this->table} {$where_clause}" ); // phpcs:disable WordPress.DB.PreparedSQL -- Okay use of unprepared variables SQL.
 	}
 
 	/**
@@ -268,6 +269,29 @@ final class UserEmailScrambler {
 		}
 
 		return array_map( 'trim', explode( ',', $this->assoc_args['ignored-domains'] ) );
+	}
+
+	/**
+	 * Combine WHERE clause fragments: domains to ignore, custom WHERE arg.
+	 *
+	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
+	 * @since  0.0.2
+	 *
+	 * @return string Formatted WHERE clause string.
+	 */
+	private function get_full_where_clause() : string {
+		$where = array_filter(
+			[
+				$this->get_ignored_domains_where_clause(),
+				$custom_where = $this->get_custom_where_clause(),
+			]
+		);
+
+		if ( empty( $where ) ) {
+			return '';
+		}
+
+		return 'WHERE ' . implode( ' AND ', $where );
 	}
 
 	/**
@@ -296,6 +320,29 @@ final class UserEmailScrambler {
 		}
 
 		return implode( $clauses, ' ' );
+	}
+
+	/**
+	 * Construct custom WHERE clause from user-provided field and value.
+	 *
+	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
+	 * @since  0.0.2
+	 *
+	 * @return string Formatted WHERE clause.
+	 */
+	private function get_custom_where_clause() : string {
+		$where_field = isset( $this->assoc_args['where-field'] ) ?
+			$this->check_field_exists( $this->assoc_args['where-field'] ) :
+			'';
+		$where_value = isset( $this->assoc_args['where-value'] ) ?
+			esc_sql( $this->assoc_args['where-value'] ) :
+			'';
+
+		if ( empty( $where_field ) || empty( $where_value ) ) {
+			return '';
+		}
+
+		return "{$where_field} = '{$where_value}'";
 	}
 
 	/**
