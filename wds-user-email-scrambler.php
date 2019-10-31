@@ -133,7 +133,7 @@ final class UserEmailScrambler {
 	 *
 	 * @return string Table name, if exists.
 	 */
-	private function get_target_table() {
+	private function get_target_table() : string {
 		if ( ! isset( $this->assoc_args['table'] ) ) {
 			return 'users';
 		}
@@ -149,7 +149,7 @@ final class UserEmailScrambler {
 	 *
 	 * @return string Primary key name.
 	 */
-	private function get_target_table_key() {
+	private function get_target_table_key() : string {
 		global $wpdb;
 
 		$response = $wpdb->get_row( "SHOW KEYS FROM {$this->table} WHERE Key_name = 'PRIMARY'" ); // phpcs:ignore WordPress.DB.PreparedSQL -- Okay use of unprepared variable for table name in SQL.
@@ -170,7 +170,7 @@ final class UserEmailScrambler {
 	 *
 	 * @return string        Field name, if exists.
 	 */
-	private function get_target_field() {
+	private function get_target_field() : string {
 		if ( ! isset( $this->assoc_args['field'] ) ) {
 			return 'user_email';
 		}
@@ -187,7 +187,7 @@ final class UserEmailScrambler {
 	 * @param  string $table User-supplied, wpdb-prefixed table name.
 	 * @return string        Confirmed, wpdb-prefixed table name, if exists.
 	 */
-	private function check_table_exists( $table ) {
+	private function check_table_exists( string $table ) : string {
 		global $wpdb;
 
 		$table    = $this->get_table_name( $table );
@@ -215,7 +215,7 @@ final class UserEmailScrambler {
 	 * @param  string $field User-supplied field name.
 	 * @return string        Confirmed field name, if exists.
 	 */
-	private function check_field_exists( $field ) {
+	private function check_field_exists( string $field ) : string {
 		global $wpdb;
 
 		$response = $wpdb->get_col( "DESC {$this->table}" ); // phpcs:ignore WordPress.DB.PreparedSQL -- Okay use of unprepared variable for table name in SQL.
