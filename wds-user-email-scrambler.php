@@ -98,6 +98,8 @@ final class UserEmailScrambler {
 	 * @since 0.0.1
 	 */
 	private function initialize_batch_process() {
+		$table = $this->get_target_table();
+		$field = $this->get_target_field( $table );
 		$user_ids        = $this->get_user_ids_to_scramble();
 		$user_id_batches = array_chunk( $user_ids, 30, true );
 
@@ -111,6 +113,90 @@ final class UserEmailScrambler {
 		}
 
 		WP_CLI::log( WP_CLI::colorize( esc_html__( '%BDone!%n', 'wds-user-email-scrambler' ) ) );
+	}
+
+	/**
+	 * Get name of table to update, default to 'users'.
+	 *
+	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
+	 * @since  0.0.2
+	 *
+	 * @return string Table name, if exists.
+	 */
+	private function get_target_table() {
+		if ( ! isset( $this->assoc_args['table'] ) ) {
+			return 'users';
+		}
+
+		return $this->check_table_exists( trim( $this->assoc_args['table'] ) );
+	}
+
+	/**
+	 * Get name of field/column to update, default to 'user_email'.
+	 *
+	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
+	 * @since  0.0.2
+	 *
+	 * @param  string $table Table name.
+	 * @return string        Field name, if exists.
+	 */
+	private function get_target_field( $table ) {
+		if ( ! isset( $this->assoc_args['field'] ) ) {
+			return 'user_email';
+		}
+
+		return $this->check_field_exists( trim( $this->assoc_args['field'] ), $table );
+	}
+
+	/**
+	 * Ensure user-supplied table name exists in the db.
+	 *
+	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
+	 * @since  0.0.2
+	 *
+	 * @param  string $table User-supplied, wpdb-prefixed table name.
+	 * @return string        Confirmed, wpdb-prefixed table name, if exists.
+	 */
+	private function check_table_exists( $table ) {
+		global $wpdb;
+
+		$table    = $this->get_table_name( $table );
+		$response = $wpdb->get_var(
+			$wpdb->prepare(
+				'SHOW TABLES LIKE %s',
+				$table
+			)
+		);
+
+		// Output error if table does not exist.
+		if ( 0 !== strcasecmp( $table, $response ) ) {
+			WP_CLI::error( esc_html__( 'Supplied table name does not exist. Please check spelling and try again.', 'wds-user-email-scrambler' ) );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Ensure user-supplied field name exists in table.
+	 *
+	 * @author Rebekah Van Epps <rebekah.vanepps@webdevstudios.com>
+	 * @since  0.0.2
+	 *
+	 * @param  string $field User-supplied field name.
+	 * @param  string $table Wpdb-prefixed table name.
+	 * @return string        Confirmed field name, if exists.
+	 */
+	private function check_field_exists( $field, $table ) {
+		global $wpdb;
+
+		$response = $wpdb->get_col( "DESC {$table}" ); // phpcs:ignore WordPress.DB.PreparedSQL -- Okay use of unprepared variable for table name in SQL.
+
+		// Output error if field does not exist.
+		if ( false === array_search( $field, $response ) ) {
+			WP_CLI::error( esc_html__( 'Supplied field name does not exist. Please check spelling and try again.', 'wds-user-email-scrambler' ) );
+		}
+
+		return $response[ array_search( $field, $response ) ];
 	}
 
 	/**
